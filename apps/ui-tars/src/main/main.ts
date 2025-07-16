@@ -30,8 +30,11 @@ import { registerSettingsHandlers } from './services/settings';
 import { sanitizeState } from './utils/sanitizeState';
 import { windowManager } from './services/windowManager';
 import { checkBrowserAvailability } from './services/browserCheck';
+import { registerTaskHandlers } from './services/task';
 
 const { isProd } = env;
+
+const isDev = process.env.NODE_ENV === 'development';
 
 // 在应用初始化之前启用辅助功能支持
 app.commandLine.appendSwitch('force-renderer-accessibility');
@@ -97,6 +100,10 @@ const initializeApp = async () => {
 
   logger.info('createMainWindow');
   let mainWindow = createMainWindow();
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   session.defaultSession.setDisplayMediaRequestHandler(
     (_request, callback) => {
@@ -196,6 +203,9 @@ const registerIPCHandlers = (
   });
 
   registerSettingsHandlers();
+
+  registerTaskHandlers();
+
   // register ipc services routes
   registerIpcMain(ipcRoutes);
 

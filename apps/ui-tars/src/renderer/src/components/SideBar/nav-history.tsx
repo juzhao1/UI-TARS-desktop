@@ -39,6 +39,7 @@ import { ShareOptions } from './share';
 
 import { Operator } from '@main/store/types';
 import { DeleteSessionDialog } from '@renderer/components/AlertDialog/delSessionDialog';
+import { ExportButton } from './export';
 
 const getIcon = (operator: Operator, isActive: boolean) => {
   const isRemote =
@@ -139,6 +140,7 @@ export function NavHistory({
                           align={'start'}
                         >
                           <ShareOptions sessionId={item.id} />
+                          <ExportButton sessionId={item.id} />
                           <DropdownMenuItem
                             className="text-red-400 focus:bg-red-50 focus:text-red-500"
                             onClick={() => handleDelete(item.id)}

@@ -8,6 +8,7 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 import type { UTIOPayload } from '@ui-tars/utio';
 
 import type { AppState, LocalStore } from '@main/store/types';
+import { ExportConversationData } from '@/main/utils/task/type';
 
 export type Channels = '';
 
@@ -50,6 +51,10 @@ const electronHandler = {
     onUpdate: (callback: (setting: LocalStore) => void) => {
       ipcRenderer.on('setting-updated', (_, state) => callback(state));
     },
+  },
+  task: {
+    exportConversation: (params: ExportConversationData) =>
+      ipcRenderer.invoke('task:exportConversation', params),
   },
 };
 
