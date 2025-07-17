@@ -27,10 +27,15 @@ export type ConversationData = {
   logTime?: number;
   systemPrompt?: string;
   modelName?: string;
-  error?: Record<string, unknown>;
+  error?: unknown;
 };
 
 export type ExportConversationData = ExportDataParams<ConversationData>;
+export type ExportCurrentConversationData = {
+  data: ConversationData;
+  folder?: string;
+  options?: { pretty?: boolean; encoding?: BufferEncoding };
+};
 
 export enum TrajectoryStatusEnum {
   finished,
@@ -38,7 +43,7 @@ export enum TrajectoryStatusEnum {
   failed,
 }
 
-export type ExportTaskData = {
+export type TaskData = {
   os: string;
   episode_id: string;
   screen_resolution: Electron.Size;

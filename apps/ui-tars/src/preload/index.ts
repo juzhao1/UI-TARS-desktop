@@ -8,7 +8,10 @@ import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 import type { UTIOPayload } from '@ui-tars/utio';
 
 import type { AppState, LocalStore } from '@main/store/types';
-import { ExportConversationData } from '@/main/utils/task/type';
+import {
+  ExportConversationData,
+  ExportCurrentConversationData,
+} from '@/main/utils/task/type';
 
 export type Channels = '';
 
@@ -55,6 +58,8 @@ const electronHandler = {
   task: {
     exportConversation: (params: ExportConversationData) =>
       ipcRenderer.invoke('task:exportConversation', params),
+    exportTask: (params: ExportCurrentConversationData) =>
+      ipcRenderer.invoke('task:exportTask', params),
   },
 };
 

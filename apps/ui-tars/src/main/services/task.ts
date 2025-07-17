@@ -7,18 +7,18 @@ import {
 import { ConversationWithSoM } from '../shared/types';
 import {
   ExportConversationData,
-  ExportTaskData,
+  ExportCurrentConversationData,
+  TaskData,
   TrajectoryStatusEnum,
 } from '../utils/task/type';
 import { getScreenSize } from '../utils/screen';
 import { RETYR_KEYWORDS } from '../utils/task/constants';
-import { ActionInputs } from '@ui-tars/shared/types';
 
 function splitByHumanStart(data: ConversationWithSoM[]) {
   const result: ConversationWithSoM[][] = [];
   let currentGroup: ConversationWithSoM[] = [];
 
-  for (const item of data) {
+  for (const [index, item] of data.entries()) {
     if (item.from === 'human' && item.value !== '<image>' && item.timing) {
       if (currentGroup.length > 0) {
         result.push(currentGroup);
@@ -55,8 +55,8 @@ function normalizeTaskData({
   instruction: string;
   conversations: ConversationWithSoM[];
   screenSize: Electron.Size;
-}): ExportTaskData {
-  const trajectory: ExportTaskData['trajectory'] = [];
+}): TaskData {
+  const trajectory: TaskData['trajectory'] = [];
   let trajectory_type =
     [
       ...(conversations[conversations.length - 1].predictionParsed || []),
@@ -126,6 +126,44 @@ export function registerTaskHandlers() {
     async (_, params: ExportConversationData) => {
       try {
         await exportDataToJsonFile(params);
+        const { data, folder } = params;
+        const { logicalSize } = getScreenSize();
+        await Promise.all(
+          splitByHumanStart(data.conversations).map((con, i) => {
+            const id = generateStableUuid(
+              data.sessionId,
+              `${con[0].value}${con[0].timing?.start ?? i}`,
+            );
+            return exportTaskToJsonFile({
+              data: normalizeTaskData({
+                id,
+                os: process.platform,
+                instruction: con[0].value,
+                conversations: con.slice(1),
+                screenSize: logicalSize,
+              }),
+              filename: 'task.json',
+              folder: `${folder}/${con[0].value}_${con[0].timing?.start}`,
+            });
+          }),
+        );
+        return {
+          status: true,
+        };
+      } catch (error) {
+        return {
+          status: false,
+          error: '保存文件失败',
+          details: error instanceof Error ? error.message : error,
+        };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'task:exportTask',
+    async (_, params: ExportCurrentConversationData) => {
+      try {
         const { data, folder } = params;
         const { logicalSize } = getScreenSize();
         await Promise.all(

@@ -1,7 +1,7 @@
 import { dirname, join } from 'path';
 import { promises as fs } from 'fs';
 import { AgentDataPath } from '../os';
-import { ExportTaskData, ExportDataParams } from './type';
+import { TaskData, ExportDataParams } from './type';
 
 export async function exportDataToJsonFile(
   params: ExportDataParams,
@@ -37,7 +37,7 @@ export async function saveBase64Image(base64: string, outputPath: string) {
 }
 
 export async function exportTaskToJsonFile(
-  params: ExportDataParams<ExportTaskData>,
+  params: ExportDataParams<TaskData>,
 ): Promise<{ status: boolean; error?: string; details?: unknown }> {
   try {
     const { data, filename, options = {} } = params;

@@ -23,6 +23,7 @@ import { api } from '@renderer/api';
 import { Play, Send, Square, Loader2 } from 'lucide-react';
 import { Textarea } from '@renderer/components/ui/textarea';
 import { useSession } from '@renderer/hooks/useSession';
+import { chatManager } from '@renderer/db/chat';
 
 import { Operator } from '@main/store/types';
 import { useSetting } from '../../hooks/useSetting';
@@ -50,18 +51,13 @@ const ChatInput = ({
   const { settings, updateSetting } = useSetting();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const running = status === StatusEnum.RUNNING;
+  const taskInstructions = useRef('');
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
   }, []);
-
-  useEffect(() => {
-    if (status === StatusEnum.INIT) {
-      return;
-    }
-  }, [status]);
 
   useEffect(() => {
     switch (operator) {
@@ -82,6 +78,66 @@ const ChatInput = ({
         break;
     }
   }, [operator]);
+
+  const autoExportTask = async () => {
+    if (!taskInstructions.current) return;
+    const instruction = taskInstructions.current;
+    taskInstructions.current = '';
+    const chatMessages =
+      (await chatManager.getSessionMessages(sessionId)) || [];
+    const chatList = chatMessages || [];
+    const lastHumanMessageIndex = [...chatList]
+      .reverse()
+      .findIndex((m) => m?.from === 'human' && m?.value !== IMAGE_PLACEHOLDER);
+    if (lastHumanMessageIndex < 0) return;
+
+    const messages = chatList.slice(
+      chatList.length - lastHumanMessageIndex - 1,
+    );
+    const id = sessionId.split('_').reverse()[0];
+    try {
+      const res = await window.electron.task.exportTask({
+        data: {
+          ...restUserData,
+          sessionId: id,
+          status,
+          conversations: messages,
+          modelDetail: {
+            name: settings.vlmModelName,
+            provider: settings.vlmProvider,
+            baseUrl: settings.vlmBaseUrl,
+            maxLoop: settings.maxLoopCount,
+          },
+          instruction,
+        },
+        folder: `/logs/${id}`,
+      });
+      if (res?.details) {
+        console.log(`导出任务失败: ${res.details}`);
+      }
+    } catch (error) {
+      console.log(
+        `导出任务失败: ${error instanceof Error ? error.message : error}`,
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (status === StatusEnum.INIT) {
+      return;
+    }
+    if (
+      taskInstructions.current &&
+      [
+        StatusEnum.END,
+        StatusEnum.MAX_LOOP,
+        StatusEnum.ERROR,
+        StatusEnum.USER_STOPPED,
+      ].includes(status)
+    ) {
+      autoExportTask();
+    }
+  }, [status]);
 
   const getInstantInstructions = () => {
     if (localInstructions?.trim()) {
@@ -108,8 +164,10 @@ const ChatInput = ({
 
     console.log('startRun', instructions, restUserData);
 
-    let history = chatMessages;
-
+    const history = chatMessages;
+    if (status !== StatusEnum.CALL_USER) {
+      taskInstructions.current = instructions;
+    }
     const session = await getSession(sessionId);
     await updateSession(sessionId, {
       name: instructions,
