@@ -45,6 +45,7 @@ const ChatInput = ({
     messages,
     restUserData,
   } = useStore();
+  const [tasks, setTasks] = useState<string[]>([]);
   const [localInstructions, setLocalInstructions] = useState('');
   const { run, stopAgentRuning } = useRunAgent();
   const { getSession, updateSession, chatMessages } = useSession();
@@ -122,6 +123,11 @@ const ChatInput = ({
     }
   };
 
+  const onTaskEnd = async () => {
+    await autoExportTask();
+    startRun();
+  };
+
   useEffect(() => {
     if (status === StatusEnum.INIT) {
       return;
@@ -135,13 +141,13 @@ const ChatInput = ({
         StatusEnum.USER_STOPPED,
       ].includes(status)
     ) {
-      autoExportTask();
+      onTaskEnd();
     }
   }, [status]);
 
   const getInstantInstructions = () => {
-    if (localInstructions?.trim()) {
-      return localInstructions;
+    if (tasks.length) {
+      return tasks[0];
     }
     if (isCallUser && savedInstructions?.trim()) {
       return savedInstructions;
@@ -161,6 +167,9 @@ const ChatInput = ({
     }
 
     const instructions = getInstantInstructions();
+    if (!instructions) {
+      return;
+    }
 
     console.log('startRun', instructions, restUserData);
 
@@ -179,6 +188,7 @@ const ChatInput = ({
 
     run(instructions, history, () => {
       setLocalInstructions('');
+      tasks.splice(0, 1);
     });
   };
 
@@ -211,9 +221,14 @@ const ChatInput = ({
   const stopRun = async () => {
     await stopAgentRuning(() => {
       setLocalInstructions('');
+      setTasks([]);
     });
     await api.clearHistory();
   };
+
+  const readonly = useMemo(() => {
+    return running || disabled || !!taskInstructions.current;
+  }, [running, disabled, taskInstructions.current]);
 
   const renderButton = () => {
     if (running) {
@@ -261,11 +276,16 @@ const ChatInput = ({
         size="icon"
         className="h-8 w-8"
         onClick={startRun}
-        disabled={!getInstantInstructions() || disabled}
+        disabled={!getInstantInstructions() || readonly}
       >
         <Send className="h-4 w-4" />
       </Button>
     );
+  };
+
+  const handleInputChange = (val: string) => {
+    setTasks(val.split('|'));
+    setLocalInstructions(val);
   };
 
   return (
@@ -283,8 +303,8 @@ const ChatInput = ({
             }
             className="min-h-[120px] rounded-2xl resize-none px-4 pb-16" // 调整内边距
             value={localInstructions}
-            disabled={running || disabled}
-            onChange={(e) => setLocalInstructions(e.target.value)}
+            disabled={readonly}
+            onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
           />
           <div className="absolute right-4 bottom-4 flex items-center gap-2">
