@@ -143,6 +143,9 @@ const Widget = () => {
     await api.clearHistory();
   }, []);
 
+  // TODO:
+  return null;
+
   return (
     <div
       className="w-100 h-100 overflow-hidden p-4 bg-white/90 dark:bg-gray-800/90 rounded-[10px] border-gray-300"
