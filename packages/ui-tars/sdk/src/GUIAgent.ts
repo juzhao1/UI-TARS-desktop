@@ -310,11 +310,6 @@ export class GUIAgent<T extends Operator> extends BaseGUIAgent<
         logger.info(
           `[GUIAgent] consumes: >>> costTime: ${costTime}, costTokens: ${costTokens} <<<`,
         );
-        logger.info('[GUIAgent] Response:', prediction);
-        logger.info(
-          '[GUIAgent] Parsed Predictions:',
-          JSON.stringify(parsedPredictions),
-        );
 
         if (!prediction) {
           logger.error('[GUIAgent] Response Empty:', prediction);

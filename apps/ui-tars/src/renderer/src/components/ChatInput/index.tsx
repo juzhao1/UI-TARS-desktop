@@ -185,10 +185,11 @@ const ChatInput = ({
         ...(restUserData || {}),
       },
     });
-
+    const newTasks = [...tasks];
+    newTasks.splice(0, 1);
+    setTasks(newTasks);
     run(instructions, history, () => {
       setLocalInstructions('');
-      tasks.splice(0, 1);
     });
   };
 

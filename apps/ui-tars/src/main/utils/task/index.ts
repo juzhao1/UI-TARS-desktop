@@ -33,7 +33,6 @@ export async function saveBase64Image(base64: string, outputPath: string) {
   const buffer = Buffer.from(pureBase64, 'base64');
   // 写入文件
   await fs.writeFile(outputPath, new Uint8Array(buffer));
-  console.log(`图片已保存: ${outputPath}`);
 }
 
 export async function exportTaskToJsonFile(

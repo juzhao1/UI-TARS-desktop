@@ -241,12 +241,9 @@ export class UITarsModel extends Model {
             ],
           };
         }
-
-        logger.info(
-          '[ResponseAPI] [headImageContext]: ',
-          this.headImageContext,
-        );
       }
+
+      logger.info('[ResponseAPI] usage >>>>>>>>>>>>>> ', result?.usage);
 
       return {
         prediction: result?.output_text ?? '',
@@ -265,6 +262,8 @@ export class UITarsModel extends Model {
         headers,
       },
     );
+
+    logger.info('[ResponseAPI] usage >>>>>>>>>>>>>> ', result.usage);
 
     return {
       prediction: result.choices?.[0]?.message?.content ?? '',

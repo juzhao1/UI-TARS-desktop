@@ -92,14 +92,6 @@ export const runAgent = async (
       screenshotBase64WithElementMarker,
       ...rest
     } = conversationsWithSoM?.[conversationsWithSoM.length - 1] || {};
-    logger.info(
-      '[onGUIAgentData] ======data======\n',
-      predictionParsed,
-      screenshotContext,
-      rest,
-      status,
-      '\n========',
-    );
 
     if (
       settings.operator === Operator.LocalComputer &&
