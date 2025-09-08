@@ -1,5 +1,75 @@
 # @agent-infra/mcp-server-browser
 
+## 1.2.21
+
+### Patch Changes
+
+- 9e1a390: fix(browser): server declares logging capability but doesn't implement method logging/setLevel
+
+## 1.2.20
+
+## 1.2.19
+
+## 1.2.18
+
+## 1.2.17
+
+### Patch Changes
+
+- fix: console error
+
+## 1.2.16
+
+### Patch Changes
+
+- 9d89dab: fix: logger
+
+## 1.2.16-beta.0
+
+### Patch Changes
+
+- fix: logger
+
+## 1.2.15
+
+### Patch Changes
+
+- refactor(mcp-browser): browser_get_markdown
+
+## 1.2.14
+
+### Patch Changes
+
+- fix: module entries
+
+## 1.2.13
+
+### Patch Changes
+
+- fix: request-context.js not work
+
+## 1.2.12
+
+### Patch Changes
+
+- fix: browser_evaluate not work
+
+## 1.2.11
+
+### Patch Changes
+
+- feat: tweak some features
+- Updated dependencies
+  - mcp-http-server@1.2.4
+
+## 1.2.10
+
+### Patch Changes
+
+- fix(mcp-browser): browser mcp screenshot and refactor form_input_fill
+- Updated dependencies
+  - mcp-http-server@1.2.3
+
 ## 1.2.9
 
 ### Patch Changes

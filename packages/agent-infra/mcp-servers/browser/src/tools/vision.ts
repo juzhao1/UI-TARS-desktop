@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { defineTool } from './defineTool.js';
+import { delayReject } from '../utils/utils.js';
 
 const screenCaptureTool = defineTool({
   name: 'browser_vision_screen_capture',
@@ -8,8 +9,20 @@ const screenCaptureTool = defineTool({
     inputSchema: {},
   },
   handle: async (ctx, _) => {
-    const { page } = ctx;
+    const { page, logger } = ctx;
     const viewport = page.viewport();
+
+    await Promise.race([
+      page.waitForNetworkIdle({
+        idleTime: 1000,
+        concurrency: 2,
+      }),
+      delayReject(5000),
+    ]).catch((e) => {
+      logger.warn(
+        `Network idle timeout, continue to take screenshot, error: ${e}`,
+      );
+    });
 
     const screenshot = await page.screenshot({
       type: 'webp',
@@ -54,22 +67,22 @@ const screenClickTool = defineTool({
             'width_factor/height_factor are quantization factors, ' +
             'If the factors are unknown, leave it blank. Most models do not require this parameter.',
         ),
-      x: z.number().describe('X coordinate'),
-      y: z.number().describe('Y coordinate'),
+      x: z.number().describe('X pixel coordinate'),
+      y: z.number().describe('Y pixel coordinate'),
     },
   },
   handle: async (ctx, args) => {
     const { page, logger, contextOptions } = ctx;
+    const factors = contextOptions.factors;
+
     try {
       let x = args.x;
       let y = args.y;
 
-      const factors = contextOptions.factors || args.factors;
-      logger.info('[vision] factors', factors);
-
       if (Array.isArray(factors) && factors.length > 0) {
         const actionParserModule = await import('@ui-tars/action-parser');
-        const { actionParser } = actionParserModule.default;
+        const { actionParser } =
+          actionParserModule?.default ?? actionParserModule;
 
         const viewport = page.viewport();
 
@@ -91,6 +104,10 @@ const screenClickTool = defineTool({
         y = start_coords?.[1] ?? y;
       }
 
+      logger.info(
+        `[browser_vision_screen_click]: (${x}, ${y}), factors: ${factors}`,
+      );
+
       await page.mouse.move(x, y);
       await page.mouse.down();
       await page.mouse.up();
@@ -103,8 +120,13 @@ const screenClickTool = defineTool({
           },
         ],
         isError: false,
+        _meta: {
+          factors,
+          screenCoords: [x, y],
+        },
       };
     } catch (error) {
+      logger.error(`Failed to browser_vision_screen_click: `, args, error);
       return {
         content: [
           {
@@ -113,6 +135,10 @@ const screenClickTool = defineTool({
           },
         ],
         isError: true,
+        _meta: {
+          factors,
+          screenCoords: [],
+        },
       };
     }
   },

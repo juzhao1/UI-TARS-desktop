@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "agent-tars",
-  "version": "0.3.0-beta.0",
+  "version": "0.3.0-beta.10",
   "description": "Agent TARS",
   "scripts": {
     "bootstrap": "pnpm install --prefer-offline && npm run build",
@@ -10,13 +10,21 @@
     "dev": "ptk d",
     "dev:core": "ptk d --packages @agent-tars/core",
     "build": "pnpm run -r build",
+    "build:tarko": "pnpm --filter \"./tarko/**\" --include-dependencies build",
+    "build:agent-tars": "pnpm --filter \"./agent-tars/**\" --include-dependencies build",
+    "build:omni-tars": "pnpm --filter \"./omni-tars/**\" --include-dependencies build",
+    "build:gui-agent": "pnpm --filter \"./gui-agent/**\" --include-dependencies build",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "format": "pnpm prettier --write .",
     "release": "ptk release --push-tag --build --ignore-scripts --tag-prefix '@agent-tars@'",
+    "release:full": "ptk release --push-tag --build --ignore-scripts --tag-prefix '@agent-tars@' --create-github-release",
     "release:ai": "ptk release --push-tag --build --ignore-scripts --tag-prefix '@agent-tars@' --use-ai --provider=azure-openai --model=aws_sdk_claude37_sonnet --baseURL=AWS_CLAUDE_API_BASE_URL",
+    "release:ai:full": "ptk release --push-tag --build --ignore-scripts --tag-prefix '@agent-tars@' --use-ai --provider=azure-openai --model=aws_sdk_claude37_sonnet --baseURL=AWS_CLAUDE_API_BASE_URL --create-github-release",
     "release:ai:dryrun": "ptk release --push-tag --build --ignore-scripts --tag-prefix '@agent-tars@' --use-ai --provider=azure-openai --model=aws_sdk_claude37_sonnet --baseURL=AWS_CLAUDE_API_BASE_URL --dry-run",
+    "github-release": "ptk github-release --tag-prefix '@agent-tars@'",
+    "github-release:dryrun": "ptk github-release --tag-prefix '@agent-tars@' --dry-run",
     "changelog": "ptk changelog --tag-prefix '@agent-tars@' --use-ai --provider=azure-openai --model=aws_sdk_claude37_sonnet --baseURL=AWS_CLAUDE_API_BASE_URL",
     "patch": "ptk patch"
   },
@@ -25,7 +33,7 @@
     "pnpm": "9"
   },
   "devDependencies": {
-    "@multimodal/pnpm-toolkit": "workspace:*",
+    "@tarko/pnpm-toolkit": "workspace:*",
     "@types/node": "22.15.30",
     "@vitest/coverage-v8": "3.2.4",
     "doctoc": "2.2.1",

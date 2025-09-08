@@ -41,8 +41,8 @@ English | [简体中文](./README.zh-CN.md)
         <br>
         <br>
         It primarily ships a
-        <a href="https://github.com/bytedance/UI-TARS-desktop/blob/docs/new-readme/docs/quick-start.md#get-model-and-run" target="_blank">local</a> and 
-        <a href="https://github.com/bytedance/UI-TARS-desktop/blob/docs/new-readme/docs/quick-start.md#try-out-our-free-remote-operators" target="_blank">remote</a> computer as well as browser operators.
+        <a href="https://github.com/bytedance/UI-TARS-desktop/blob/main/docs/quick-start.md#get-model-and-run-local-operator" target="_blank">local</a> and 
+        <a href="https://github.com/bytedance/UI-TARS-desktop/blob/main/docs/quick-start.md#run-remote-operator" target="_blank">remote</a> computer as well as browser operators.
       </td>
     </tr>
   </tbody>
@@ -240,7 +240,7 @@ Visit the comprehensive [Quick Start](https://agent-tars.com/guide/get-started/q
   <img alt="UI-TARS" width="260" src="./apps/ui-tars/resources/icon.png">
 </p>
 
-UI-TARS Desktop is a native GUI agent driven by [UI-TARS](https://github.com/bytedance/UI-TARS) and Seed-1.5-VL/1.6 series models, available on your local computer and remote VM sandbox on cloud.
+UI-TARS Desktop is a native GUI agent for your local computer, driven by [UI-TARS](https://github.com/bytedance/UI-TARS) and Seed-1.5-VL/1.6 series models.
 
 <div align="center">
 <p>
@@ -272,7 +272,6 @@ UI-TARS Desktop is a native GUI agent driven by [UI-TARS](https://github.com/byt
 - 💻 Cross-platform support (Windows/MacOS/Browser)
 - 🔄 Real-time feedback and status display
 - 🔐 Private and secure - fully local processing
-- 🛠️ Effortless setup and intuitive remote operators
 
 ### Quick Start
 

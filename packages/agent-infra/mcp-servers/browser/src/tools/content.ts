@@ -1,22 +1,40 @@
 import { z } from 'zod';
 import { defineTool } from './defineTool.js';
-import { toMarkdown } from '@agent-infra/shared';
+import { delayReject } from '../utils/utils.js';
 
 const getMarkdownTool = defineTool({
   name: 'browser_get_markdown',
   config: {
     description: 'Get the markdown content of the current page',
+    inputSchema: {},
   },
   handle: async (ctx, _args) => {
-    const { page } = ctx;
+    const { page, logger } = ctx;
     try {
-      const html = await page.content();
-      const markdown = toMarkdown(html);
+      await Promise.race([
+        page.waitForNetworkIdle({
+          idleTime: 1000,
+          concurrency: 2,
+        }),
+        delayReject(3000),
+      ]).catch((e) => {
+        logger.warn(
+          `Network idle timeout, continue to get markdown, error: ${e}`,
+        );
+      });
+
+      const { extractContent } = await import('@agent-infra/browser-context');
+      const { title, content } = await extractContent(page as any);
+
+      const markdown = title + '\n' + content || '';
+      logger.info(`[browser_get_markdown]: title: ${markdown}`);
+
       return {
         content: [{ type: 'text', text: markdown }],
         isError: false,
       };
     } catch (error) {
+      logger.error('Failed to browser_get_markdown', error);
       return {
         content: [
           {
@@ -33,9 +51,10 @@ const getTextTool = defineTool({
   name: 'browser_get_text',
   config: {
     description: 'Get the text content of the current page',
+    inputSchema: {},
   },
   handle: async (ctx, _args) => {
-    const { page } = ctx;
+    const { page, logger } = ctx;
 
     try {
       const text = await page.evaluate(
@@ -47,6 +66,7 @@ const getTextTool = defineTool({
         isError: false,
       };
     } catch (error) {
+      logger.error('Failed to browser_get_text', error);
       return {
         content: [
           {
@@ -64,24 +84,38 @@ const readLinksTool = defineTool({
   name: 'browser_read_links',
   config: {
     description: 'Get all links on the current page',
+    outputSchema: {
+      links: z.array(
+        z.object({
+          text: z.string(),
+          href: z.string(),
+        }),
+      ),
+    },
   },
   handle: async (ctx, _args) => {
-    const { page } = ctx;
+    const { page, logger } = ctx;
     try {
       const links = await page.evaluate(
         /* istanbul ignore next */ () => {
           const linkElements = document.querySelectorAll('a[href]');
-          return Array.from(linkElements).map((el) => ({
-            text: (el as HTMLElement).innerText,
-            href: el.getAttribute('href'),
-          }));
+          return Array.from(linkElements)
+            .map((el) => ({
+              text: (el as HTMLElement).innerText,
+              href: el.getAttribute('href') || '',
+            }))
+            .filter((link) => link.href);
         },
       );
       return {
         content: [{ type: 'text', text: JSON.stringify(links, null, 2) }],
+        structuredContent: {
+          links,
+        },
         isError: false,
       };
     } catch (error) {
+      logger.error('Failed to browser_read_links', error);
       return {
         content: [
           {
@@ -89,6 +123,9 @@ const readLinksTool = defineTool({
             text: `Failed to read links: ${(error as Error).message}`,
           },
         ],
+        structuredContent: {
+          links: [],
+        },
         isError: true,
       };
     }

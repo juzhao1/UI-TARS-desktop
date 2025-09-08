@@ -1,5 +1,51 @@
 ## 0.4.0 2024-12-10 - add logging
 
+## 1.2.21
+
+### Patch Changes
+
+- 9e1a390: fix(browser): server declares logging capability but doesn't implement method logging/setLevel
+
+## 1.2.20
+
+## 1.2.19
+
+## 1.2.18
+
+### Patch Changes
+
+- feat: add cwd for default
+
+## 1.2.17
+
+## 1.2.16
+
+## 1.2.16-beta.0
+
+## 1.2.15
+
+## 1.2.14
+
+## 1.2.13
+
+## 1.2.12
+
+## 1.2.11
+
+### Patch Changes
+
+- feat: tweak some features
+- Updated dependencies
+  - mcp-http-server@1.2.4
+
+## 1.2.10
+
+### Patch Changes
+
+- chore: update mcp version
+- Updated dependencies
+  - mcp-http-server@1.2.3
+
 ## 1.2.9
 
 ## 1.2.8

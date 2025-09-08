@@ -4,6 +4,7 @@ import { PuppeteerBlocker } from '@ghostery/adblocker-puppeteer';
 import { getBuildDomTreeScript } from '@agent-infra/browser-use';
 import { parseProxyUrl, delayReject } from '../utils/utils.js';
 import fetch from 'cross-fetch';
+
 import { store } from '../store.js';
 import { ensureDirExists } from './file.js';
 
@@ -54,7 +55,7 @@ export const getCurrentPage = async (browser: Browser) => {
       try {
         // last chance to check if the page is still responsive
         await Promise.race([
-          page.evaluate(() => document.title),
+          page.evaluate(/* istanbul ignore next */ () => document.title),
           delayReject(2000),
         ]);
         // if the page is still responsive, keep it
@@ -86,11 +87,12 @@ export const getCurrentPage = async (browser: Browser) => {
   };
 };
 
-export const getTabList = async (browser: Browser) => {
+export const getTabList = async (browser: Browser, activePageId: number) => {
   const pages = await browser?.pages();
   return await Promise.all(
     pages?.map(async (page, idx) => ({
       index: idx,
+      active: idx === activePageId,
       title: await page.title(),
       url: await page.url(),
     })) || [],
@@ -221,10 +223,10 @@ export async function ensureBrowser() {
             ? (event.receivedBytes / event.totalBytes) * 100
             : 0;
 
-        console.log(
+        logger.info(
           `下载进度 [${event.guid}]: ${downloadInfo.progress.toFixed(2)}%`,
         );
-        console.log(
+        logger.info(
           `状态: ${event.state}, 已下载: ${event.receivedBytes}/${event.totalBytes}`,
         );
 

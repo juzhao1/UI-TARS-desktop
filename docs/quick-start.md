@@ -49,7 +49,18 @@ You can download the [latest release](https://github.com/bytedance/UI-TARS-deskt
 
 <br />
 
-## Get model and run
+
+## Run remote operator
+
+The Remote Operator service will be discontinued on August 20, 2025. If you wish to deploy your own Remote Computer and Browser Agent after the free trial, you can explore Volcano Engine's OS Agent Services.
+
+Deployment Links (in Chinese): [Computer Use Agent](https://console.volcengine.com/vefaas/region:vefaas+cn-beijing/application/create?templateId=680b0a890e881f000862d9f0&channel=github&source=ui-tars) and [Browser Use Agent](https://console.volcengine.com/vefaas/region:vefaas+cn-beijing/application/create?templateId=67f7b4678af5a6000850556c&channel=github&source=ui-tars)
+
+
+<br />
+
+
+## Get model and run local operator
 
 ### UI-TARS-1.5 on [Hugging Face](https://endpoints.huggingface.co/catalog)
 
@@ -67,7 +78,7 @@ You can download the [latest release](https://github.com/bytedance/UI-TARS-deskt
 Language: en
 VLM Provider: Hugging Face for UI-TARS-1.5
 VLM Base URL: https:xxx
-VLM API KEY: hf_xxx
+VLM API KEY: your_api_key
 VLM Model Name: xxx
 ```
 
@@ -117,7 +128,7 @@ VLM Model Name: xxx
 Language: cn
 VLM Provider: VolcEngine Ark for Doubao-1.5-UI-TARS
 VLM Base URL: https://ark.cn-beijing.volces.com/api/v3
-VLM API KEY: ARK_API_KEY
+VLM API KEY: YOUR_API_KEY
 VLM Model Name: doubao-1.5-ui-tars-250328
 ```
 
@@ -140,27 +151,6 @@ VLM Model Name: doubao-1.5-ui-tars-250328
 
 <br>
 
-
-## Try out our free remote operators
-
-1. Open the app and agree to our User Agreement
-
-<img src="../apps/ui-tars/images/quick_start/user_agreement.png" width="500px" />
-
-> [!NOTE]
-> We promise all records on the servers will be exclusively used for academic research purposes and will not be utilized for any other activities.
-
-2. Use for free for 30 minutes
-
-<img src="../apps/ui-tars/images/quick_start/free_for_30min.png" width="500px" />
-
-3. Easily take control of a remote device
-
-<img src="../apps/ui-tars/images/quick_start/take_control.png" width="500px" />
-
-4. How to exit/close
-
-<img src="../apps/ui-tars/images/quick_start/terminate.png" width="500px" />
 
 ## More
 

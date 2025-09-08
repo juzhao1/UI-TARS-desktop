@@ -80,7 +80,7 @@ Response:
       "createdAt": 1622548800000,
       "updatedAt": 1622548800000,
       "name": "Session Name",
-      "workingDirectory": "/path/to/workspace",
+      "workspace": "/path/to/workspace",
       "tags": ["tag1", "tag2"]
     }
     // ...more sessions
@@ -353,14 +353,6 @@ socket.emit('send-query', {
 
 // Abort a query
 socket.emit('abort-query', { sessionId: 'session-id' });
-```
-
-## Browser Control Information
-
-Get browser control mode information:
-
-```bash
-GET /api/v1/sessions/browser-control?sessionId=session-id
 ```
 
 ## Storage Providers

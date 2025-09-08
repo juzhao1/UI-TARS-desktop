@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Spinner, Button } from '@nextui-org/react';
 import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
@@ -19,7 +19,7 @@ const NotFoundPage: React.FC = () => {
   // Set meta for 404 page
   usePageMeta({
     title: generatePageTitle('Page Not Found'),
-    description: 'The page you\'re looking for doesn\'t exist or has been moved.',
+    description: "The page you're looking for doesn't exist or has been moved.",
   });
 
   return (
@@ -56,10 +56,6 @@ export const Showcase: React.FC = () => {
   const pathInfo = extractIdFromPath(location.pathname);
   const isDetailPage = !!pathInfo;
 
-  // Check access permission for the index page
-  const searchParams = new URLSearchParams(location.search);
-  const hasAccess = searchParams.get('enableShowcaseIndex') === '1';
-
   // Always call hooks in the same order - move useShowcaseData before conditional returns
   const hookParams = pathInfo
     ? pathInfo.type === 'sessionId'
@@ -72,18 +68,12 @@ export const Showcase: React.FC = () => {
   // Set base meta tags for showcase
   usePageMeta({
     title: generatePageTitle('Showcase'),
-    description: 'Explore Agent TARS showcase demos and replays. Discover real-world examples of multimodal AI agent capabilities in action.',
+    description:
+      'Explore Agent TARS showcase demos and replays. Discover real-world examples of multimodal AI agent capabilities in action.',
   });
 
   if (isInSSR()) {
     return null;
-  }
-
-  // Now we can do conditional rendering after all hooks are called
-  // For detail pages, we don't need access control
-  // For index page, we need to check access permission
-  if (!isDetailPage && !hasAccess) {
-    return <NotFoundPage />;
   }
 
   if (isDetailPage) {
@@ -105,8 +95,11 @@ export const Showcase: React.FC = () => {
       isLoading={isLoading}
       error={error}
       onRetry={refetch}
-      onNavigateToDetail={(item) => {
-        navigate(`/showcase/${encodeURIComponent(item.id)}`);
+      onNavigateToDetail={(item, activeCategory) => {
+        // Pass current category as state to preserve filter when navigating back
+        navigate(`/showcase/${encodeURIComponent(item.id)}`, {
+          state: { previousCategory: activeCategory !== 'all' ? activeCategory : null }
+        });
       }}
     />
   );
@@ -118,7 +111,7 @@ interface ShowcaseListPageProps {
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
-  onNavigateToDetail: (item: ShowcaseItem) => void;
+  onNavigateToDetail: (item: ShowcaseItem, activeCategory: string) => void;
 }
 
 const ShowcaseListPage: React.FC<ShowcaseListPageProps> = ({
@@ -129,7 +122,32 @@ const ShowcaseListPage: React.FC<ShowcaseListPageProps> = ({
   onRetry,
   onNavigateToDetail,
 }) => {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  
+  // Get category from URL params, default to 'all'
+  const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'all');
+  
+  // Update URL when category changes
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    const newSearchParams = new URLSearchParams(location.search);
+    if (categoryId === 'all') {
+      newSearchParams.delete('category');
+    } else {
+      newSearchParams.set('category', categoryId);
+    }
+    navigate(`/showcase${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`, { replace: true });
+  };
+  
+  // Sync state with URL changes (for browser back/forward)
+  useEffect(() => {
+    const currentCategory = searchParams.get('category') || 'all';
+    if (currentCategory !== activeCategory) {
+      setActiveCategory(currentCategory);
+    }
+  }, [location.search]);
 
   const filteredItems = useMemo(() => {
     return processedData?.getItemsByCategory(activeCategory) || [];
@@ -143,9 +161,9 @@ const ShowcaseListPage: React.FC<ShowcaseListPageProps> = ({
       const categoryName = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
       const title = generatePageTitle(`${categoryName} Showcase`);
       const description = optimizeDescription(
-        `Explore ${categoryName} demos and examples with Agent TARS. See real-world applications of multimodal AI in ${activeCategory}.`
+        `Explore ${categoryName} demos and examples with Agent TARS. See real-world applications of multimodal AI in ${activeCategory}.`,
       );
-      
+
       if (typeof document !== 'undefined') {
         document.title = title;
         const metaDesc = document.querySelector('meta[name="description"]');
@@ -190,7 +208,7 @@ const ShowcaseListPage: React.FC<ShowcaseListPageProps> = ({
         <CategoryFilter
           categories={categoriesWithCounts}
           activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
+          onSelectCategory={handleCategoryChange}
         />
 
         {isLoading ? (
@@ -220,7 +238,7 @@ const ShowcaseListPage: React.FC<ShowcaseListPageProps> = ({
                       key={item.id}
                       item={item}
                       index={index}
-                      onOpenPreview={onNavigateToDetail}
+                      onOpenPreview={(item) => onNavigateToDetail(item, activeCategory)}
                     />
                   ))}
                 </div>
@@ -276,6 +294,7 @@ const ShowcaseDetailPage: React.FC<ShowcaseDetailPageProps> = ({
   onRetry,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Set meta for detail page based on loaded item
   React.useEffect(() => {
@@ -283,20 +302,20 @@ const ShowcaseDetailPage: React.FC<ShowcaseDetailPageProps> = ({
       const item = items[0];
       const title = generatePageTitle(item.title);
       const description = optimizeDescription(
-        `${item.description} - Explore this ${item.category} demonstration showcasing Agent TARS capabilities.`
+        `${item.description} - Explore this ${item.category} demonstration showcasing Agent TARS capabilities.`,
       );
-      
+
       // Update meta tags dynamically
       if (typeof document !== 'undefined') {
         document.title = title;
-        
+
         const setMetaContent = (selector: string, content: string) => {
           const meta = document.querySelector(selector);
           if (meta) {
             meta.setAttribute('content', content);
           }
         };
-        
+
         setMetaContent('meta[name="description"]', description);
         setMetaContent('meta[property="og:title"]', title);
         setMetaContent('meta[property="og:description"]', description);
@@ -393,7 +412,17 @@ const ShowcaseDetailPage: React.FC<ShowcaseDetailPageProps> = ({
     );
   }
 
-  return <ShowcaseDetail item={items[0]} onBack={() => navigate('/showcase')} />;
+  const handleBackToShowcase = () => {
+    // Use navigation state to preserve category filter
+    const previousCategory = location.state?.previousCategory;
+    if (previousCategory) {
+      navigate(`/showcase?category=${previousCategory}`);
+    } else {
+      navigate('/showcase');
+    }
+  };
+  
+  return <ShowcaseDetail item={items[0]} onBack={handleBackToShowcase} />;
 };
 
 export default Showcase;
