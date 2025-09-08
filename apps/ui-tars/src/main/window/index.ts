@@ -72,7 +72,7 @@ export async function hideMainWindow() {
     mainWindow?.setContentProtection(true);
     mainWindow?.setAlwaysOnTop(true);
     mainWindow?.setFocusable(false);
-    mainWindow?.minimize();
+    // mainWindow?.minimize();
     // mainWindow?.hide();
   } catch (error) {
     logger.error('[hideMainWindow]', error);
@@ -86,7 +86,7 @@ export async function showMainWindow() {
       mainWindow?.setAlwaysOnTop(false);
     }, 100);
     mainWindow?.setFocusable(true);
-    mainWindow?.restore();
+    // mainWindow?.restore();
     // mainWindow?.show();
   } catch (error) {
     logger.error('[showMainWindow]', error);

@@ -86,7 +86,9 @@ function normalizeTaskData({
     if (predictionParsed) {
       if (
         trajectory_type === TrajectoryStatusEnum.finished &&
-        RETYR_KEYWORDS.some((key) => predictionParsed.thought.includes(key))
+        RETYR_KEYWORDS.some((key) =>
+          predictionParsed.thought.toLowerCase().includes(key),
+        )
       ) {
         trajectory_type = TrajectoryStatusEnum.retry_finished;
       }

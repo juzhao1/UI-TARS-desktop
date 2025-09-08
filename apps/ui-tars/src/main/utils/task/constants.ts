@@ -13,4 +13,10 @@ export const RETYR_KEYWORDS = [
   '不生效',
   '未生效',
   '多次尝试',
+  'retry',
+  'error',
+  'unsuccessful',
+  'delayed',
+  'failed',
+  'wrong',
 ];
