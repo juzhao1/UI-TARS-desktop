@@ -1,4 +1,4 @@
-export const rules = [
+const rules = [
   { id: '@secretlint/secretlint-rule-1password' },
   { id: '@secretlint/secretlint-rule-anthropic' },
   { id: '@secretlint/secretlint-rule-aws' },
@@ -32,3 +32,5 @@ export const rules = [
   },
   { id: '@secretlint/secretlint-rule-privatekey' },
 ];
+
+module.exports.rules = rules;

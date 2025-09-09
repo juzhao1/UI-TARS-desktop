@@ -125,7 +125,9 @@ const ChatInput = ({
 
   const onTaskEnd = async () => {
     await autoExportTask();
-    startRun();
+    if (status !== StatusEnum.USER_STOPPED) {
+      startRun();
+    }
   };
 
   useEffect(() => {
