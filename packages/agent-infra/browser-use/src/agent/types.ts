@@ -28,7 +28,8 @@ export interface AgentOptions {
 }
 
 export const DEFAULT_AGENT_OPTIONS: AgentOptions = {
-  maxSteps: 100,
+  // TODO: 设置任务最大执行步数
+  maxSteps: 50,
   maxActionsPerStep: 10,
   maxFailures: 3,
   retryDelay: 10,
