@@ -48,7 +48,8 @@ const ChatInput = ({
   const [tasks, setTasks] = useState<string[]>([]);
   const [localInstructions, setLocalInstructions] = useState('');
   const { run, stopAgentRuning } = useRunAgent();
-  const { getSession, updateSession, chatMessages } = useSession();
+  const { getSession, updateSession, chatMessages, deleteMessages } =
+    useSession();
   const { settings, updateSetting } = useSetting();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const running = status === StatusEnum.RUNNING;
@@ -126,6 +127,8 @@ const ChatInput = ({
   const onTaskEnd = async () => {
     await window.electron.task.endTask();
     await autoExportTask();
+    // TODO: delete messages
+    await deleteMessages(sessionId);
     if (status !== StatusEnum.USER_STOPPED) {
       startRun();
     }
