@@ -30,7 +30,7 @@ import { registerSettingsHandlers } from './services/settings';
 import { sanitizeState } from './utils/sanitizeState';
 import { windowManager } from './services/windowManager';
 import { checkBrowserAvailability } from './services/browserCheck';
-import { registerTaskHandlers } from './services/task';
+import { registerTaskAppHandlers, registerTaskHandlers } from './services/task';
 
 const { isProd } = env;
 
@@ -205,6 +205,8 @@ const registerIPCHandlers = (
   registerSettingsHandlers();
 
   registerTaskHandlers();
+
+  registerTaskAppHandlers();
 
   // register ipc services routes
   registerIpcMain(ipcRoutes);

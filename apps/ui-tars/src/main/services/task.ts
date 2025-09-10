@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { v5 } from 'uuid';
+
 import {
   exportDataToJsonFile,
   exportTaskToJsonFile,
@@ -13,6 +14,7 @@ import {
 } from '../utils/task/type';
 import { getScreenSize } from '../utils/screen';
 import { RETYR_KEYWORDS } from '../utils/task/constants';
+import { closeOpenedApps, getCurrentApps } from '../utils/os';
 
 function splitByHumanStart(data: ConversationWithSoM[]) {
   const result: ConversationWithSoM[][] = [];
@@ -199,4 +201,23 @@ export function registerTaskHandlers() {
       }
     },
   );
+}
+
+/**
+ * Register Task app handlers
+ */
+export function registerTaskAppHandlers() {
+  let userOpendApps: string[] = [];
+
+  ipcMain.handle('task:start', async () => {
+    userOpendApps = await getCurrentApps();
+  });
+
+  ipcMain.handle('task:end', async () => {
+    const currentOpendApps = await getCurrentApps();
+    const closedApps = currentOpendApps.filter(
+      (app) => !userOpendApps.includes(app),
+    );
+    closeOpenedApps(closedApps);
+  });
 }

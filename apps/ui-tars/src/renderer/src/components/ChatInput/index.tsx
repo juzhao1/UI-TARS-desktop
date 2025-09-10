@@ -124,6 +124,7 @@ const ChatInput = ({
   };
 
   const onTaskEnd = async () => {
+    await window.electron.task.endTask();
     await autoExportTask();
     if (status !== StatusEnum.USER_STOPPED) {
       startRun();
@@ -172,7 +173,7 @@ const ChatInput = ({
     if (!instructions) {
       return;
     }
-
+    await window.electron.task.startTask();
     console.log('startRun', instructions, restUserData);
 
     const history = chatMessages;

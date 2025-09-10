@@ -60,6 +60,8 @@ const electronHandler = {
       ipcRenderer.invoke('task:exportConversation', params),
     exportTask: (params: ExportCurrentConversationData) =>
       ipcRenderer.invoke('task:exportTask', params),
+    startTask: () => ipcRenderer.invoke('task:start'),
+    endTask: () => ipcRenderer.invoke('task:end'),
   },
 };
 

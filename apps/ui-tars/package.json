@@ -60,6 +60,7 @@
     "@computer-use/node-mac-permissions": "2.2.2",
     "bufferutil": "^4.0.9",
     "jose": "^6.0.11",
+    "ps-list": "^8.1.1",
     "sharp": "0.33.3",
     "utf-8-validate": "^6.0.5"
   },
