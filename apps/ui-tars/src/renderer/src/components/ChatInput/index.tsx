@@ -287,7 +287,7 @@ const ChatInput = ({
   };
 
   const handleInputChange = (val: string) => {
-    setTasks(val.split('|'));
+    setTasks(val.split('/&/'));
     setLocalInstructions(val);
   };
 
@@ -298,11 +298,12 @@ const ChatInput = ({
           <Textarea
             ref={textareaRef}
             placeholder={
-              isCallUser && savedInstructions
+              (isCallUser && savedInstructions
                 ? `${savedInstructions}`
                 : running && lastHumanMessage && messages?.length > 1
                   ? lastHumanMessage
-                  : 'What can I do for you today?'
+                  : 'What can I do for you today?') +
+              'Multiple instructions are concatenated using ‘/&/’'
             }
             className="min-h-[120px] rounded-2xl resize-none px-4 pb-16" // 调整内边距
             value={localInstructions}
