@@ -129,7 +129,7 @@ const ChatInput = ({
     await autoExportTask();
     await window.electron.task.endTask();
     // TODO: delete messages
-    // await deleteMessages(sessionId);
+    await deleteMessages(sessionId);
     if (status !== StatusEnum.USER_STOPPED && isUserStopped.current !== true) {
       isUserStopped.current = false;
       startRun();
@@ -147,6 +147,7 @@ const ChatInput = ({
         StatusEnum.MAX_LOOP,
         StatusEnum.ERROR,
         StatusEnum.USER_STOPPED,
+        StatusEnum.CALL_USER,
       ].includes(status)
     ) {
       onTaskEnd();
