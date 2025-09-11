@@ -18,6 +18,7 @@ export interface ModalInfo {
 export type ConversationData = {
   sessionId: string;
   instruction: string;
+  taskKey: string;
   status: string;
   conversations: ConversationWithSoM[];
   modelDetail: ModalInfo;

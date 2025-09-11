@@ -188,7 +188,7 @@ export function registerTaskHandlers() {
                 screenSize: logicalSize,
               }),
               filename: 'task.json',
-              folder: `${folder}/${instruction}_${con[0].timing?.start}`,
+              folder: `${folder}/${data.taskKey}_${con[0].timing?.start}`,
             });
           }),
         );

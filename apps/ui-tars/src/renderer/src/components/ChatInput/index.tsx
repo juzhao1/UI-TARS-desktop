@@ -27,6 +27,7 @@ import { chatManager } from '@renderer/db/chat';
 
 import { Operator } from '@main/store/types';
 import { useSetting } from '../../hooks/useSetting';
+import { extractTaskKey } from '../../utils';
 
 const ChatInput = ({
   operator,
@@ -54,6 +55,7 @@ const ChatInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const running = status === StatusEnum.RUNNING;
   const taskInstructions = useRef('');
+  const taskKey = useRef('');
   const isUserStopped = useRef(false);
 
   useEffect(() => {
@@ -99,6 +101,9 @@ const ChatInput = ({
     );
     const id = sessionId.split('_').reverse()[0];
     try {
+      const taskInstruction = instruction
+        .replace(/\(guide: [^)]+\)/g, '')
+        .trim();
       const res = await window.electron.task.exportTask({
         data: {
           ...restUserData,
@@ -111,7 +116,8 @@ const ChatInput = ({
             baseUrl: settings.vlmBaseUrl,
             maxLoop: settings.maxLoopCount,
           },
-          instruction: instruction.replace(/\(guide: [^)]+\)/g, '').trim(),
+          instruction: taskInstruction,
+          taskKey: taskKey.current || taskInstruction,
         },
         folder: `/logs/${id}`,
       });
@@ -156,6 +162,12 @@ const ChatInput = ({
 
   const getInstantInstructions = () => {
     if (tasks.length) {
+      const key = extractTaskKey(tasks[0]);
+      if (key) {
+        taskKey.current = key;
+        return tasks[0].replace(key, '');
+      }
+      taskKey.current = tasks[0];
       return tasks[0];
     }
     if (isCallUser && savedInstructions?.trim()) {
@@ -175,6 +187,7 @@ const ChatInput = ({
       }
     }
 
+    taskKey.current = '';
     const instructions = getInstantInstructions();
     if (!instructions) {
       return;
