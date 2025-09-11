@@ -111,7 +111,7 @@ const ChatInput = ({
             baseUrl: settings.vlmBaseUrl,
             maxLoop: settings.maxLoopCount,
           },
-          instruction,
+          instruction: instruction.replace(/\(guide: [^)]+\)/g, '').trim(),
         },
         folder: `/logs/${id}`,
       });
@@ -126,10 +126,10 @@ const ChatInput = ({
   };
 
   const onTaskEnd = async () => {
-    await window.electron.task.endTask();
     await autoExportTask();
+    await window.electron.task.endTask();
     // TODO: delete messages
-    await deleteMessages(sessionId);
+    // await deleteMessages(sessionId);
     if (status !== StatusEnum.USER_STOPPED && isUserStopped.current !== true) {
       isUserStopped.current = false;
       startRun();
@@ -178,6 +178,7 @@ const ChatInput = ({
     if (!instructions) {
       return;
     }
+    isUserStopped.current = false;
     await window.electron.task.startTask();
     console.log('startRun', instructions, restUserData);
 

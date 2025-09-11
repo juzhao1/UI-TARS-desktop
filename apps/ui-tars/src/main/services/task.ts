@@ -176,16 +176,19 @@ export function registerTaskHandlers() {
               data.sessionId,
               `${con[0].value}${con[0].timing?.start ?? i}`,
             );
+            const instruction = con[0].value
+              .replace(/\(guide: [^)]+\)/g, '')
+              .trim();
             return exportTaskToJsonFile({
               data: normalizeTaskData({
                 id,
                 os: process.platform,
-                instruction: con[0].value,
+                instruction,
                 conversations: con.slice(1),
                 screenSize: logicalSize,
               }),
               filename: 'task.json',
-              folder: `${folder}/${con[0].value}_${con[0].timing?.start}`,
+              folder: `${folder}/${instruction}_${con[0].timing?.start}`,
             });
           }),
         );
