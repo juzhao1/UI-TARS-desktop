@@ -54,6 +54,7 @@ const ChatInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const running = status === StatusEnum.RUNNING;
   const taskInstructions = useRef('');
+  const isUserStopped = useRef(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -129,7 +130,8 @@ const ChatInput = ({
     await autoExportTask();
     // TODO: delete messages
     await deleteMessages(sessionId);
-    if (status !== StatusEnum.USER_STOPPED) {
+    if (status !== StatusEnum.USER_STOPPED && isUserStopped.current !== true) {
+      isUserStopped.current = false;
       startRun();
     }
   };
@@ -226,6 +228,7 @@ const ChatInput = ({
       ?.value || '';
 
   const stopRun = async () => {
+    isUserStopped.current = true;
     await stopAgentRuning(() => {
       setLocalInstructions('');
       setTasks([]);
@@ -291,7 +294,7 @@ const ChatInput = ({
   };
 
   const handleInputChange = (val: string) => {
-    setTasks(val.split('/&/'));
+    setTasks(val.split('--&--'));
     setLocalInstructions(val);
   };
 
@@ -300,7 +303,7 @@ const ChatInput = ({
       <div className="pb-2 px-2 text-xs" style={{ color: '#999' }}>
         <div>
           <Info className="h-5 w-5 inline px-1 pb-1" />
-          Multiple instructions are concatenated using ‘/&/’.
+          Multiple instructions are concatenated using ‘--&--’.
         </div>
         <div>
           <Info className="h-5 w-5 inline px-1 pb-1" />
