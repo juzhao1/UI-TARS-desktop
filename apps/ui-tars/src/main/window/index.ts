@@ -63,8 +63,8 @@ export function setContentProtection(enable: boolean) {
 export async function showWindow() {
   mainWindow?.setContentProtection(false);
   mainWindow?.setIgnoreMouseEvents(false);
-  // mainWindow?.show();
-  // mainWindow?.restore();
+  mainWindow?.show();
+  mainWindow?.restore();
 }
 
 export async function hideMainWindow() {

@@ -165,7 +165,7 @@ const ChatInput = ({
       const key = extractTaskKey(tasks[0]);
       if (key) {
         taskKey.current = key;
-        return tasks[0].replace(key, '');
+        return tasks[0].replace(/^【.*?】/, '');
       }
       taskKey.current = tasks[0];
       return tasks[0];
