@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { IMAGE_PLACEHOLDER } from '@ui-tars/shared/constants';
 import { StatusEnum } from '@ui-tars/shared/types';
+import { sleep } from '@ui-tars/shared/utils';
 
 import { useRunAgent } from '@renderer/hooks/useRunAgent';
 import { useStore } from '@renderer/hooks/useStore';
@@ -129,6 +130,7 @@ const ChatInput = ({
         `导出任务失败: ${error instanceof Error ? error.message : error}`,
       );
     }
+    await sleep(2000);
   };
 
   const onTaskEnd = async () => {
