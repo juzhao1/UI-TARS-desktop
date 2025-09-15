@@ -149,7 +149,6 @@ const ChatInput = ({
       return;
     }
     if (
-      taskInstructions.current &&
       [
         StatusEnum.END,
         StatusEnum.MAX_LOOP,
@@ -158,7 +157,15 @@ const ChatInput = ({
         StatusEnum.CALL_USER,
       ].includes(status)
     ) {
-      onTaskEnd();
+      if (taskInstructions.current) {
+        onTaskEnd();
+      } else if (
+        status !== StatusEnum.USER_STOPPED &&
+        isUserStopped.current !== true
+      ) {
+        isUserStopped.current = false;
+        startRun();
+      }
     }
   }, [status]);
 
