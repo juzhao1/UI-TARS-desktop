@@ -189,6 +189,16 @@ const ChatInput = ({
     return '';
   };
 
+  const existInstruction = () => {
+    if (taskInstructions.current || tasks.length) {
+      return true;
+    }
+    if (isCallUser && savedInstructions?.trim()) {
+      return true;
+    }
+    return false;
+  };
+
   // console.log('running', 'status', status, running);
 
   const startRun = async () => {
@@ -210,9 +220,10 @@ const ChatInput = ({
     console.log('startRun', instructions, restUserData);
 
     const history = chatMessages;
-    if (status !== StatusEnum.CALL_USER) {
-      taskInstructions.current = instructions;
-    }
+    // if (status !== StatusEnum.CALL_USER) {
+    //   taskInstructions.current = instructions;
+    // }
+    taskInstructions.current = instructions;
     const session = await getSession(sessionId);
     await updateSession(sessionId, {
       name: instructions,
@@ -235,14 +246,8 @@ const ChatInput = ({
     }
 
     // `enter` to submit
-    if (
-      e.key === 'Enter' &&
-      !e.shiftKey &&
-      !e.metaKey &&
-      getInstantInstructions()
-    ) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && existInstruction()) {
       e.preventDefault();
-
       startRun();
     }
   };
@@ -292,7 +297,7 @@ const ChatInput = ({
                 size="icon"
                 className="h-8 w-8 bg-pink-100 hover:bg-pink-200 text-pink-500 border-pink-200"
                 onClick={startRun}
-                disabled={!getInstantInstructions()}
+                disabled={!existInstruction()}
               >
                 <Play className="h-4 w-4" />
               </Button>
@@ -314,7 +319,7 @@ const ChatInput = ({
         size="icon"
         className="h-8 w-8"
         onClick={startRun}
-        disabled={!getInstantInstructions() || readonly}
+        disabled={!existInstruction() || readonly}
       >
         <Send className="h-4 w-4" />
       </Button>
