@@ -408,7 +408,9 @@ export class GUIAgent<T extends Operator> extends BaseGUIAgent<
 
           // Action types must break the loop after operator execution:
           if (actionType === INTERNAL_ACTION_SPACES_ENUM.CALL_USER) {
-            data.status = StatusEnum.CALL_USER;
+            // TODO: 自动执行任务不需要有CALL_USER状态，直接结束
+            // data.status = StatusEnum.CALL_USER;
+            data.status = StatusEnum.END;
             break;
           } else if (actionType === INTERNAL_ACTION_SPACES_ENUM.FINISHED) {
             data.status = StatusEnum.END;

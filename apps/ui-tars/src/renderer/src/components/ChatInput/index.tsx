@@ -163,6 +163,10 @@ const ChatInput = ({
   }, [status]);
 
   const getInstantInstructions = () => {
+    if (taskInstructions.current) {
+      return taskInstructions.current;
+    }
+
     if (tasks.length) {
       const key = extractTaskKey(tasks[0]);
       if (key) {
