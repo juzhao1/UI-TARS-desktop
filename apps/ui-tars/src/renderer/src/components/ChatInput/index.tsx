@@ -184,9 +184,9 @@ const ChatInput = ({
       return tasks[0];
     }
     taskKey.current = '';
-    if (isCallUser && savedInstructions?.trim()) {
-      return savedInstructions;
-    }
+    // if (isCallUser && savedInstructions?.trim()) {
+    //   return savedInstructions;
+    // }
     return '';
   };
 

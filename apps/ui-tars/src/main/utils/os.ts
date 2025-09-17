@@ -17,25 +17,31 @@ async function loadPsList() {
 export async function getCurrentApps() {
   const psList = await loadPsList();
   if (!psList) {
+    console.error('Failed to load process list');
     return [];
   }
   const processes = await psList();
-  if (!processes) {
+  if (!processes || !Array.isArray(processes)) {
+    console.error('Invalid process list format');
     return [];
   }
-  return processes.map((proc) => proc.name); // 返回程序名称列表
+
+  // 确保获取的每个进程都有名称属性
+  return processes
+    .filter((proc) => proc.name) // 过滤掉没有名称的进程
+    .map((proc) => proc.name); // 返回程序名称列表
 }
 
 // 关闭程序的函数
 export function closeOpenedApps(appNames: string[]) {
   appNames.forEach((appName) => {
-    let command;
+    let command = '';
     if (process.platform === 'win32') {
-      command = `taskkill /IM ${appName} /F`;
+      command = `taskkill /IM ${appName} /F /T`; // 强制关闭及其子进程
     } else if (process.platform === 'darwin') {
-      command = `pkill -f ${appName}`;
+      command = `pkill -9 -f ${appName}`; // 强制关闭
     } else if (process.platform === 'linux') {
-      command = `pkill ${appName}`;
+      command = `pkill -9 ${appName}`; // 强制关闭
     }
 
     exec(command, (error, stdout, stderr) => {
