@@ -183,6 +183,7 @@ const ChatInput = ({
       taskKey.current = tasks[0];
       return tasks[0];
     }
+    taskKey.current = '';
     if (isCallUser && savedInstructions?.trim()) {
       return savedInstructions;
     }
@@ -210,7 +211,6 @@ const ChatInput = ({
       }
     }
 
-    taskKey.current = '';
     const instructions = getInstantInstructions();
     if (!instructions) {
       return;
