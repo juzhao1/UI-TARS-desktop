@@ -13,3 +13,4 @@ scripts/merge-yml/*.yml
 .claude/
 .tarko
 tasks/
+.mcp*_token

@@ -13,6 +13,17 @@
 export type AgentWebUIImplementationType = 'static' | 'remote';
 
 /**
+ * Navigation item icon type
+ */
+export type WorkspaceNavItemIcon =
+  | 'code'
+  | 'monitor'
+  | 'terminal'
+  | 'browser'
+  | 'desktop'
+  | 'default';
+
+/**
  * Navigation item configuration for workspace
  */
 export interface WorkspaceNavItem {
@@ -24,6 +35,11 @@ export interface WorkspaceNavItem {
    * Link URL to open in new tab
    */
   link: string;
+  /**
+   * Icon type for the navigation item
+   * @defaultValue 'default'
+   */
+  icon?: WorkspaceNavItemIcon;
 }
 
 /**
@@ -45,6 +61,16 @@ export interface LayoutConfig {
    * @defaultValue false
    */
   enableLayoutSwitchButton?: boolean;
+  /**
+   * Enable sidebar display
+   * @defaultValue true
+   */
+  enableSidebar?: boolean;
+  /**
+   * Enable home route registration
+   * @defaultValue true
+   */
+  enableHome?: boolean;
 }
 
 /**
@@ -104,6 +130,45 @@ export interface TarkoWebUIGUIAgentConfig {
 }
 
 /**
+ * Welcome card configuration
+ */
+export interface WelcomeCard {
+  /**
+   * Card title
+   */
+  title: string;
+  /**
+   * Card category for grouping
+   */
+  category: string;
+  /**
+   * Card prompt content
+   */
+  prompt?: string;
+  /**
+   * Card background image URL
+   */
+  image?: string;
+  /**
+   * Agent options to pass when creating session
+   */
+  agentOptions?: Record<string, any>;
+}
+
+/**
+ * Debug configuration options
+ */
+export interface DebugConfig {
+  /**
+   * Enable Event Stream Viewer for debugging
+   * Shows real-time event stream in a modal accessible from sidebar
+   *
+   * @defaultValue false
+   */
+  enableEventStreamViewer?: boolean;
+}
+
+/**
  * Base agent implementation interface
  */
 export interface BaseAgentWebUIImplementation {
@@ -142,12 +207,26 @@ export interface BaseAgentWebUIImplementation {
    */
   welcomePrompts?: string[];
   /**
+   * Welcome cards configuration
+   */
+  welcomeCards?: WelcomeCard[];
+  /**
    * Enable contextual file selector with @ syntax
    * When enabled, users can type @ in the input to search and select workspace files/directories
    *
    * @defaultValue false
    */
   enableContextualSelector?: boolean;
+  /**
+   * Base path for routing deployment
+   * Supports both static paths and regex patterns
+   *
+   * @example
+   * base: "/agent-ui"           // Static path
+   * base: "/tenant-.+"         // Regex pattern
+   * base: "/(foo|bar)/app"     // Regex with groups
+   */
+  base?: string;
   /**
    * Workspace configuration
    */
@@ -160,6 +239,10 @@ export interface BaseAgentWebUIImplementation {
    * GUI Agent configuration for web UI
    */
   guiAgent?: TarkoWebUIGUIAgentConfig;
+  /**
+   * Debug configuration
+   */
+  debug?: DebugConfig;
 }
 
 /**
@@ -168,7 +251,7 @@ export interface BaseAgentWebUIImplementation {
 export interface StaticAgentWebUIImplementation extends BaseAgentWebUIImplementation {
   type?: 'static';
   /**
-   * Web UI Static Path, example implementation: `@tarko/web-ui`.
+   * Web UI Static Path, example implementation: `@tarko/agent-ui`.
    */
   staticPath: string;
 }
@@ -178,6 +261,7 @@ export interface StaticAgentWebUIImplementation extends BaseAgentWebUIImplementa
  */
 export interface RemoteAgentWebUIImplementation extends BaseAgentWebUIImplementation {
   type?: 'remote';
+  remoteUrl?: string;
 }
 
 /**
@@ -192,10 +276,10 @@ export type AgentWebUIImplementation =
  */
 export type AgentWebUIImplementationByType<T extends AgentWebUIImplementationType> =
   T extends 'static'
-  ? StaticAgentWebUIImplementation
-  : T extends 'remote'
-  ? RemoteAgentWebUIImplementation
-  : never;
+    ? StaticAgentWebUIImplementation
+    : T extends 'remote'
+      ? RemoteAgentWebUIImplementation
+      : never;
 
 /**
  * Type guard to check if implementation is of specific type

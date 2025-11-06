@@ -16,10 +16,17 @@ const USERNAME_MAP: Record<string, string> = {
 };
 
 /**
- * Map commit author to correct GitHub username
+ * Extract GitHub username from noreply email or apply manual mapping
  */
-function mapUsername(username: string): string {
-  return USERNAME_MAP[username] || username;
+function resolveGitHubUsername(authorName: string, authorEmail: string): string {
+  // Extract from GitHub noreply email pattern: {id}+{username}@users.noreply.github.com
+  const emailMatch = authorEmail.match(/^\d+\+([^@]+)@users\.noreply\.github\.com$/);
+  if (emailMatch) {
+    return emailMatch[1];
+  }
+  
+  // Fallback to manual mapping
+  return USERNAME_MAP[authorName] || authorName;
 }
 
 /**
@@ -34,19 +41,38 @@ export interface GitHubReleaseOptions {
 
 /**
  * Gets the previous tag for generating release notes
+ * Handles mixed tag formats (v1.0.0 and @agent-tars@1.0.0)
+ * Filters out canary releases
  */
 export async function getPreviousTag(tagName: string, cwd: string): Promise<string | null> {
   try {
-    // Get all tags sorted by version
-    const { stdout } = await execa('git', ['tag', '--sort=-version:refname'], { cwd });
-    const tags = stdout.trim().split('\n').filter(Boolean);
+    // Get all tags sorted by creation date (chronological order, newest first)
+    const { stdout } = await execa('git', ['tag', '--sort=-creatordate'], { cwd });
+    const allTags = stdout.trim().split('\n').filter(Boolean);
 
-    // Find the current tag index
-    const currentIndex = tags.indexOf(tagName);
+    if (allTags.length === 0) {
+      return null;
+    }
+
+    // Filter out canary releases
+    const nonCanaryTags = allTags.filter((tag) => !tag.includes('canary'));
+
+    if (nonCanaryTags.length === 0) {
+      return null;
+    }
+
+    // Find the current tag in the filtered list
+    const currentIndex = nonCanaryTags.findIndex((tag) => tag === tagName);
+
+    if (currentIndex === -1) {
+      // If current tag not found, it might be a new tag
+      // Return the most recent non-canary tag (first in the list)
+      return nonCanaryTags[0] || null;
+    }
 
     // Return the next tag (previous in chronological order)
-    if (currentIndex >= 0 && currentIndex < tags.length - 1) {
-      return tags[currentIndex + 1];
+    if (currentIndex < nonCanaryTags.length - 1) {
+      return nonCanaryTags[currentIndex + 1];
     }
 
     return null;
@@ -122,7 +148,7 @@ export async function generateReleaseNotes(
         const match = commit.subject.match(/^feat(\([^)]+\))?:\s*(.+)$/);
         const description = match ? match[2] : commit.subject;
         const scope = match?.[1] || '';
-        releaseNotes += `* feat${scope}: ${description} by @${mapUsername(commit.author).toLowerCase()} in ${commit.hash.substring(0, 7)}\n`;
+        releaseNotes += `* feat${scope}: ${description} by @${resolveGitHubUsername(commit.author, commit.email)} in ${commit.hash.substring(0, 7)}\n`;
       });
       releaseNotes += '\n';
     }
@@ -134,7 +160,7 @@ export async function generateReleaseNotes(
         const match = commit.subject.match(/^fix(\([^)]+\))?:\s*(.+)$/);
         const description = match ? match[2] : commit.subject;
         const scope = match?.[1] || '';
-        releaseNotes += `* fix${scope}: ${description} by @${mapUsername(commit.author).toLowerCase()} in ${commit.hash.substring(0, 7)}\n`;
+        releaseNotes += `* fix${scope}: ${description} by @${resolveGitHubUsername(commit.author, commit.email)} in ${commit.hash.substring(0, 7)}\n`;
       });
       releaseNotes += '\n';
     }
@@ -146,7 +172,7 @@ export async function generateReleaseNotes(
         const match = commit.subject.match(/^docs(\([^)]+\))?:\s*(.+)$/);
         const description = match ? match[2] : commit.subject;
         const scope = match?.[1] || '';
-        releaseNotes += `* docs${scope}: ${description} by @${mapUsername(commit.author).toLowerCase()} in ${commit.hash.substring(0, 7)}\n`;
+        releaseNotes += `* docs${scope}: ${description} by @${resolveGitHubUsername(commit.author, commit.email)} in ${commit.hash.substring(0, 7)}\n`;
       });
       releaseNotes += '\n';
     }
@@ -166,20 +192,32 @@ export async function generateReleaseNotes(
         const type = match?.[1] || '';
         const scope = match?.[2] || '';
         const description = match ? match[3] : commit.subject;
-        releaseNotes += `* ${type}${scope}: ${description} by @${mapUsername(commit.author).toLowerCase()} in ${commit.hash.substring(0, 7)}\n`;
+        releaseNotes += `* ${type}${scope}: ${description} by @${resolveGitHubUsername(commit.author, commit.email)} in ${commit.hash.substring(0, 7)}\n`;
       });
     }
 
     // Add Full Changelog link if repository info is available
     if (repoInfo) {
       if (previousTag) {
-        // Extract version from tag (remove prefix like @agent-tars@)
-        const previousVersion = previousTag.replace(/^.*@/, 'v');
-        const currentVersion = tagName.replace(/^.*@/, 'v');
+        // Extract version from tag (ensure v prefix for display)
+        const previousVersion = previousTag.startsWith('v')
+          ? previousTag
+          : previousTag.startsWith('@')
+            ? previousTag
+            : `v${previousTag}`;
+        const currentVersion = tagName.startsWith('v')
+          ? tagName
+          : tagName.startsWith('@')
+            ? tagName
+            : `v${tagName}`;
         const changelogText = `${previousVersion}...${currentVersion}`;
         releaseNotes += `\n**Full Changelog**: [${changelogText}](https://github.com/${repoInfo.owner}/${repoInfo.repo}/compare/${previousTag}...${tagName})`;
       } else {
-        const currentVersion = tagName.replace(/^.*@/, 'v');
+        const currentVersion = tagName.startsWith('v')
+          ? tagName
+          : tagName.startsWith('@')
+            ? tagName
+            : `v${tagName}`;
         releaseNotes += `\n**Full Changelog**: [${currentVersion}](https://github.com/${repoInfo.owner}/${repoInfo.repo}/commits/${tagName})`;
       }
     }
