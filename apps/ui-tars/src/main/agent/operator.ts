@@ -92,11 +92,19 @@ export class NutJSElectronOperator extends NutJSOperator {
       logger.info('[device] type', content);
       const stripContent = content.replace(/\\n$/, '').replace(/\n$/, '');
       const originalClipboard = clipboard.readText();
-      clipboard.writeText(stripContent);
-      await keyboard.pressKey(Key.LeftControl, Key.V);
-      await sleep(50);
-      await keyboard.releaseKey(Key.LeftControl, Key.V);
-      await sleep(50);
+      const stripContents = stripContent.split(/(?<!\\)\n/);
+      for (let i = 0; i < stripContents.length; i++) {
+        clipboard.writeText(stripContents[i]);
+        await keyboard.pressKey(Key.LeftControl, Key.V);
+        await sleep(50);
+        await keyboard.releaseKey(Key.LeftControl, Key.V);
+        await sleep(50);
+        if (i < stripContents.length - 1) {
+          await keyboard.pressKey(Key.Enter);
+          await keyboard.releaseKey(Key.Enter);
+          await sleep(50);
+        }
+      }
       clipboard.writeText(originalClipboard);
     } else {
       return await super.execute(params);

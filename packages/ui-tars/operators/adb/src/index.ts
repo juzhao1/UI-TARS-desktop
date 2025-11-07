@@ -171,10 +171,26 @@ export class AdbOperator extends Operator {
           if (content) {
             // Use text command to input text, need to handle special characters
             const escapedContent = content.replace(/(['"\\])/g, '\\$1');
-            const cmd = this.androidDevUseAdbIME
-              ? `adb -s ${this.deviceId} shell am broadcast -a ADB_INPUT_TEXT --es msg "${escapedContent}"`
-              : `adb -s ${this.deviceId} shell input text "${escapedContent}"`;
-            await commandWithTimeout(cmd);
+            const contents = escapedContent.split(/(?<!\\)\n/);
+            for (let c = 0; c < contents.length; c += 1) {
+              const singleContent = contents[c];
+              const cmd = this.androidDevUseAdbIME
+                ? `adb -s ${this.deviceId} shell am broadcast -a ADB_INPUT_TEXT --es msg "${singleContent}"`
+                : `adb -s ${this.deviceId} shell input text "${singleContent}"`;
+              await commandWithTimeout(cmd);
+              if (c < contents.length - 1) {
+                await this.execute({
+                  ...params,
+                  parsedPrediction: {
+                    ...params.parsedPrediction,
+                    action_type: 'hotkey',
+                    action_inputs: {
+                      key: 'enter',
+                    },
+                  },
+                });
+              }
+            }
           }
           break;
         case 'swipe':

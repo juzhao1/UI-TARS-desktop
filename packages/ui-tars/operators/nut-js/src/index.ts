@@ -21,11 +21,17 @@ import {
   centerOf,
   keyboard,
   mouse,
-  sleep,
+  sleep as nutSleep,
   straightTo,
   clipboard,
 } from '@computer-use/nut-js';
 import Big from 'big.js';
+
+const sleep = async (ms: number) => {
+  if (process.platform !== 'darwin') {
+    await nutSleep(ms);
+  }
+};
 
 const moveStraightTo = async (startX: number | null, startY: number | null) => {
   if (startX === null || startY === null) {
@@ -41,7 +47,7 @@ export class NutJSOperator extends Operator {
       `right_single(start_box='[x1, y1, x2, y2]')`,
       `drag(start_box='[x1, y1, x2, y2]', end_box='[x3, y3, x4, y4]')`,
       `hotkey(key='')`,
-      `type(content='') #If you want to submit your input, use "\\n" at the end of \`content\`.`,
+      `type(content='') #If you want to submit your input, use "\\n" at the end of \`content\`. "\n" is used for line breaks.`,
       `scroll(start_box='[x1, y1, x2, y2]', direction='down or up or right or left')`,
       `wait() #Sleep for 5s and take a screenshot to check for any changes.`,
       `finished()`,
@@ -241,17 +247,30 @@ export class NutJSOperator extends Operator {
         logger.info('[NutjsOperator] type', content);
         if (content) {
           const stripContent = content.replace(/\\n$/, '').replace(/\n$/, '');
+          const originalClipboard =
+            process.platform === 'win32' ? await clipboard.getContent() : '';
           keyboard.config.autoDelayMs = 0;
+          const stripContents = stripContent.split(/(?<!\\)\n/);
+          logger.info('[NutjsOperator] stripContents', stripContents);
+          for (let i = 0; i < stripContents.length; i++) {
+            if (process.platform === 'win32') {
+              await clipboard.setContent(stripContents[i]);
+              await keyboard.pressKey(Key.LeftControl, Key.V);
+              await sleep(50);
+              await keyboard.releaseKey(Key.LeftControl, Key.V);
+            } else {
+              await keyboard.type(stripContents[i]);
+            }
+            if (i < stripContents.length - 1) {
+              await sleep(50);
+              await keyboard.pressKey(Key.Enter);
+              await keyboard.releaseKey(Key.Enter);
+              await sleep(50);
+            }
+          }
+
           if (process.platform === 'win32') {
-            const originalClipboard = await clipboard.getContent();
-            await clipboard.setContent(stripContent);
-            await keyboard.pressKey(Key.LeftControl, Key.V);
-            await sleep(50);
-            await keyboard.releaseKey(Key.LeftControl, Key.V);
-            await sleep(50);
             await clipboard.setContent(originalClipboard);
-          } else {
-            await keyboard.type(stripContent);
           }
 
           if (content.endsWith('\n') || content.endsWith('\\n')) {
@@ -299,7 +318,12 @@ export class NutJSOperator extends Operator {
           await moveStraightTo(startX, startY);
         }
 
-        switch (direction?.toLowerCase()) {
+        let key = direction?.toLowerCase();
+        if (process.platform === 'darwin') {
+          key = key === 'up' ? 'down' : 'up';
+        }
+
+        switch (key) {
           case 'up':
             await mouse.scrollUp(5 * 100);
             break;
